@@ -1,4 +1,3 @@
-#include <Rod.h>
 #include <iostream>
 #include <complex>
 #include <cmath>
@@ -14,23 +13,33 @@ void fftw(int, complex*, complex*);
 
 
 int main(int argc, char *argv[] ) {
-    int n = 16384;
-    double len = 60, dx = len/n ;
-    complex *f = new complex[n];
-    complex *g = new complex[n];
+
+    //define the arrays which will be acted on by fftw
+    complex *function = new complex[n];
+    complex *ftfunction = new complex[n];
+    
+    
+    //populate the real space array with valuses derived from constants
     for(int i = 0; i < n; i++){
-        double x = (i - n/2 +1.05e-5)*dx;
-        f[i] = sin(x)/x ;
+        double x = (i + 0.5)*dx;
+        function[i] = x ;
     };
     
-    fftw(n, f, g);
-    
+    //call fftw as many time as I say
+    for(int i = 0; i < sparktime; i++){
+        fftw(n, function, ftfunction);
+    }
+        
     for(int i = 0; i < n; i++){
-        std::cout << f[i] <<","<< g[i] << std::endl;
+        std::cout << function[i] <<","<< ftfunction[i] << std::endl;
     }
 
-    delete [] f;
-    delete [] g;
+    
+    
+    
+    
+    delete [] function;
+    delete [] ftfunction;
     return 0;
 }
 

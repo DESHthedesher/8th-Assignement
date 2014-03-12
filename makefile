@@ -10,8 +10,8 @@ all: Hotrod
 example: example.cpp
 	g++ -O2 -Wall -o example example.cpp -lfftw3
 
-Hotrod: Rod.o runner.o
-	${CPP} ${cflags} -o Hotrod Rod.o runner.o ${libraries} 
+Hotrod: runner.o
+	${CPP} ${cflags} -o Hotrod runner.o ${libraries} 
 
 Rod.o: Rod.cpp
 	${CPP} ${cflags} -c Rod.cpp
