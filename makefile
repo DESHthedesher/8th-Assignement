@@ -1,10 +1,23 @@
 CPP = g++
 
-cflags = -O0 -I. -Wall -c
+cflags = -O2 -I. -Wall
 
+libraries = -lfftw3
+
+
+all: Hotrod
+
+example: example.cpp
+	g++ -O2 -Wall -o example example.cpp -lfftw3
+
+Hotrod: Rod.o runner.o
+	${CPP} ${cflags} -o Hotrod Rod.o runner.o ${libraries} 
 
 Rod.o: Rod.cpp
-	${CPP} ${cflags} Rod.cpp
+	${CPP} ${cflags} -c Rod.cpp
+
+runner.o: runner.cpp
+	${CPP} ${cflags} -c runner.cpp
 
 clean:
-	rm -rf Rod.o 
+	rm -rf Rod.o runner.o Hotrod example
