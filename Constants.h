@@ -4,7 +4,7 @@
 const int n = 40;
 
 //coefficient of diffusivity
-const double D = 10.0;
+const double diffusivity = 10.0;
 
 //the length of the rod
 const double length = 2.0;
