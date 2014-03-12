@@ -3,6 +3,7 @@
 #include <complex>
 #include <cmath>
 #include <fftw3.h>
+#include <Constants.h>
 
 //define abnormal types
 typedef std::complex<double> complex;
