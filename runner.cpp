@@ -16,7 +16,9 @@ complex* boundaries(complex*, int);
 
 
 int main(int argc, char *argv[] ) {
-
+//n+2 data points used to ensure that boundary conditions are not along the "rod of interest"
+    
+    
     //define the arrays which will be acted on by fftw
     complex *heat = new complex[n+2];
     complex *ftheat = new complex[n+2];
@@ -60,9 +62,7 @@ int main(int argc, char *argv[] ) {
     
     
     
-    //call fftw to find the initial fourier tranformed temperature
-    
-    //inject heat every sparktime steps
+    //inject heat every "sparktime" number of steps
     for(int h = 0; h < totaltime/sparktime; h++){
         time = 0;
         heat[(n+2)/2] += 1.0;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[] ) {
         firstFTheat = ftheat;
         
         
-        //call fftw iteratively to solve the system
+        //evolve the system in fourier space
         for(int i = 0; i < sparktime; i++){
             step += 1;
         
@@ -79,14 +79,14 @@ int main(int argc, char *argv[] ) {
                 Dkt = -1*diffusivity*pow(allk[k],2.0)*time;
                 ftheat[k] = firstFTheat[k]*pow(euler,Dkt);
             }
-
+          
             //impose periodic boundary conditions
             ftheat = boundaries(ftheat, n);
-            
+          
             //reverse the fourier tranform on the evolved values
             fftwb(n+2, ftheat, heat);
-            
-            //write out the evolved heat and increase the timestep
+         
+            //increase the timestep
             time += dt;
     
         }
@@ -105,6 +105,7 @@ int main(int argc, char *argv[] ) {
     return 0;
 }
 
+//simple boundary conditions
 complex* boundaries(complex *f, int n){
 
     f[0] = f[n];
@@ -112,14 +113,15 @@ complex* boundaries(complex *f, int n){
     return f;
 }
 
+//prints the temperature along the rod in real space
 void printRodT(complex *f, int n){
     
     for(int i=0; i < n+2; i++)
         std::cout << f[i] << std::endl;
         
-        
 }
 
+//fourier transforms f into g
 void fftwf(int n, complex *f, complex *g){
     
     fftw_plan p = fftw_plan_dft_1d(n, (fftw_complex*)f, (fftw_complex*)g, FFTW_FORWARD, FFTW_ESTIMATE);
@@ -128,6 +130,7 @@ void fftwf(int n, complex *f, complex *g){
     
 }
 
+//reverse fourier transforms f into g
 void fftwb(int n, complex *f, complex *g){
     
     fftw_plan p = fftw_plan_dft_1d(n, (fftw_complex*)f, (fftw_complex*)g, FFTW_BACKWARD, FFTW_ESTIMATE);
