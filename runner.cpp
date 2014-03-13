@@ -11,8 +11,8 @@ typedef std::complex<double> complex;
 void fftwf(int, complex*, complex*);
 void fftwb(int, complex*, complex*);
 void printRodT(complex*, int);
-complex* boundaries(complex*, int);
-
+complex* ComplexBoundaries(complex*, int);
+double* Boundaries(double, int);
 
 
 int main(int argc, char *argv[] ) {
@@ -80,12 +80,15 @@ int main(int argc, char *argv[] ) {
                 ftheat[k] = firstFTheat[k]*pow(euler,Dkt);
             }
           
-            //impose periodic boundary conditions
-            ftheat = boundaries(ftheat, n);
-          
             //reverse the fourier tranform on the evolved values
             fftwb(n+2, ftheat, heat);
          
+            //impose periodic boundary conditiondouble* Boundaries(double *f, int n)s
+            //heat = boundaries(heat, n);
+            
+            //re-fourier transform the boundary modified values
+            fftwf(n+2, heat, ftheat);
+            
             //increase the timestep
             time += dt;
     
@@ -105,8 +108,17 @@ int main(int argc, char *argv[] ) {
     return 0;
 }
 
-//simple boundary conditions
-complex* boundaries(complex *f, int n){
+
+//simple boundary conditions for real arrays
+double* Boundaries(double *f, int n){
+
+    f[0] = f[n];
+    f[n+1] = f[1];
+    return f;
+}
+
+//simple boundary conditions for complex arrays
+complex* ComplexBoundaries(complex *f, int n){
 
     f[0] = f[n];
     f[n+1] = f[1];
