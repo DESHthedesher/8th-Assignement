@@ -8,9 +8,10 @@
 typedef std::complex<double> complex;
 
 //prototype functions in runner
-void fftwf(int, complex*, complex*);
-void fftwb(int, complex*, complex*);
-void printRodT(complex*, int);
+void fftwf(int, double*, complex*);
+void fftwb(int, complex*, double*);
+void printComplexArray(complex*, int);
+void printRealArray(double*,int);
 complex* ComplexBoundaries(complex*, int);
 double* Boundaries(double, int);
 
@@ -20,7 +21,7 @@ int main(int argc, char *argv[] ) {
     
     
     //define the arrays which will be acted on by fftw
-    complex *heat = new complex[n+2];
+    double *heat = new double[n+2];
     complex *ftheat = new complex[n+2];
     
     //define complementary arrays
@@ -82,11 +83,19 @@ int main(int argc, char *argv[] ) {
           
             //reverse the fourier tranform on the evolved values
             fftwb(n+2, ftheat, heat);
-         
-            //impose periodic boundary conditiondouble* Boundaries(double *f, int n)s
-            //heat = boundaries(heat, n);
             
-            //re-fourier transform the boundary modified values
+            //re-normalize
+            for(int i = 0; i < n+2 ; i++){
+                double normalValue = heat[i]/(n+2);
+                heat[i] = normalValue;
+            }
+            
+            //impose boundary conditions
+            //heat = Boundaries(heat, n);
+            heat[0] = heat[n];
+            heat[n+1] = heat[1];
+            
+            //re-take the fourier transform
             fftwf(n+2, heat, ftheat);
             
             //increase the timestep
@@ -95,7 +104,7 @@ int main(int argc, char *argv[] ) {
         }
         
         //print the step, time, and T
-        printRodT(heat, n+2);
+        printRealArray(heat, n+2);
         std::cout<<"time: "<<time<<std::endl;
         std::cout <<"step"<<step<<"\n\n\n\n"<<std::endl;
     
@@ -126,26 +135,34 @@ complex* ComplexBoundaries(complex *f, int n){
 }
 
 //prints the temperature along the rod in real space
-void printRodT(complex *f, int n){
+void printRealArray(double *f, int n){
+    for(int i=0; i<n+2 ; i++){
+        std::cout<<f[i]<<std::endl;
+    }
+    
+}
+
+//prints the temperature along the rod in fake space
+void printComplexArray(complex *f, int n){
     
     for(int i=0; i < n+2; i++)
         std::cout << f[i] << std::endl;
         
 }
 
-//fourier transforms f into g
-void fftwf(int n, complex *f, complex *g){
+//"forward" fourier transforms real array into complex array
+void fftwf(int n, double*in, complex*out){
     
-    fftw_plan p = fftw_plan_dft_1d(n, (fftw_complex*)f, (fftw_complex*)g, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_plan p = fftw_plan_dft_r2c_1d(n, in, (fftw_complex*)out, FFTW_ESTIMATE);
     fftw_execute(p);
     fftw_destroy_plan(p);
     
 }
 
-//reverse fourier transforms f into g
-void fftwb(int n, complex *f, complex *g){
+//"reverse" fourier transforms complex array into real array
+void fftwb(int n, complex *in, double *out){
     
-    fftw_plan p = fftw_plan_dft_1d(n, (fftw_complex*)f, (fftw_complex*)g, FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_plan p = fftw_plan_dft_c2r_1d(n, (fftw_complex*)in, out, FFTW_ESTIMATE);
     fftw_execute(p);
     fftw_destroy_plan(p);
     
