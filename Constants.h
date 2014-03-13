@@ -20,3 +20,9 @@ const double dt = 0.0001;
 
 //number of timesteps before the rod is heated
 const int sparktime = 10;
+
+//total number of timesteps
+const int totaltime = 50;
+
+//amount of heat injected
+const double heatinject = 1;
