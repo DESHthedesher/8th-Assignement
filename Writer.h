@@ -14,9 +14,10 @@ private:
     std::ofstream dataFile;
 
 public:
-    Writer(float *, float, int);
+    Writer(double *, double, int);
     void metaWrite(int, int, double, double);
-    void writeLine(float *,float, int);
+    void writeLine(double *, double, int);
+    void printLine(double *, int);
     ~Writer();
     
 };

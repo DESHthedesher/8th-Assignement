@@ -11,23 +11,21 @@ typedef std::complex<double> complex;
 //prototype functions in runner
 void fftwf(int, double*, complex*);
 void fftwb(int, complex*, double*);
-
+void printComplexArray(complex*, int);
+void printRealArray(double*,int);
+complex* ComplexBoundaries(complex*, int);
+double* Boundaries(double, int);
 
 
 int main(int argc, char *argv[] ) {
 //n+2 data points used to ensure that boundary conditions are not along the "rod of interest"
     
     
-////////////////////////////////////////////////////////////////////////
-//////////This first section mainly consists of creating////////////////
-//////////all the variables, and should be in it's own class////////////
-//////////in the world where time grows on trees////////////////////////
-////////////////////////////////////////////////////////////////////////    
+    //Create Classes
     
     //define the arrays which will be acted on by fftw
     double *heat = new double[n+2];
     complex *ftheat = new complex[n+2];
-    
     
     //define complementary arrays
     double *rod = new double[n+2];
@@ -51,32 +49,27 @@ int main(int argc, char *argv[] ) {
         allk[i] = k;
     }
     
+    
+    
     //populate the rod with space values
     for(int i = 0; i < n+2; i++){
         double x = (i + 0.5)*dx;
         rod[i] = x ;
-    }    
+    }
+    
     
     //make heat 0 everywwhere in the rod except for halfway down the rod
     for(int i = 0; i < n+2; i++){
         double y = 0;
         heat[i] = y;
     }
- 
-/////////////////////////////////////////////////////////////////////////
-/////////////end of the "class" initialization///////////////////////////
-/////////////////////////////////////////////////////////////////////////   
     
     
-    // Initialize Writer Class
-    Writer W(heat, time, n);
-    W.metaWrite( n, plotEvery, dx, dt );
-   
     
-    //inject heat at every "sparktime" number of steps
+    //inject heat every "sparktime" number of steps
     for(int h = 0; h < totaltime/sparktime; h++){
-        heat[(n+2)/2] += heatinject;
-        double timesincespark = 0;
+        time = 0;
+        heat[(n+2)/2] += 1.0;
         fftwf(n+2, heat, ftheat);
         firstFTheat = ftheat;
         
@@ -84,17 +77,14 @@ int main(int argc, char *argv[] ) {
         //evolve the system in fourier space
         for(int i = 0; i < sparktime; i++){
             step += 1;
-            
-            //take the fourier transform
-            fftwf(n+2, heat, ftheat);
         
             //modify the fourier transformed values
             for(int k = 0; k < n+2; k++){
-                Dkt = -1*diffusivity*pow(allk[k],2.0)*timesincespark;
+                Dkt = -1*diffusivity*pow(allk[k],2.0)*time;
                 ftheat[k] = firstFTheat[k]*pow(euler,Dkt);
             }
           
-            //reverse the fourier transform on the evolved values
+            //reverse the fourier tranform on the evolved values
             fftwb(n+2, ftheat, heat);
             
             //re-normalize
@@ -104,35 +94,66 @@ int main(int argc, char *argv[] ) {
             }
             
             //impose boundary conditions
+            //heat = Boundaries(heat, n);
             heat[0] = heat[n];
             heat[n+1] = heat[1];
             
-            //increase the timestep and write to file
+            //re-take the fourier transform
+            fftwf(n+2, heat, ftheat);
+            
+            //increase the timestep
             time += dt;
-            timesincespark += dt;
-            if(step % plotEvery == 0){
-                W.writeLine(heat, time, n);
-            }
-                
+    
         }
         
-        //print the current array
-        W.printLine(heat, n+2);
+        //print the step, time, and T
+        printRealArray(heat, n+2);
+        std::cout<<"time: "<<time<<std::endl;
+        std::cout <<"step"<<step<<"\n\n\n\n"<<std::endl;
         
         
-        
+    
     }
     
     //cleanup
     delete [] rod;
     delete [] heat;
     delete [] ftheat;
-    delete [] allk;
     return 0;
 }
 
 
+//simple boundary conditions for real arrays
+double* Boundaries(double *f, int n){
 
+    f[0] = f[n];
+    f[n+1] = f[1];
+    return f;
+}
+
+//simple boundary conditions for complex arrays
+complex* ComplexBoundaries(complex *f, int n){
+
+    f[0] = f[n];
+    f[n+1] = f[1];
+    return f;
+}
+
+//prints the temperature along the rod in real space
+void printRealArray(double *f, int n){
+    for(int i=0; i<n+2 ; i++){
+        std::cout<<f[i]<<std::endl;
+    }
+    
+}
+
+//prints the temperature along the rod in fake space
+void printComplexArray(complex *f, int n){
+    
+    for(int i=0; i < n+2; i++)
+        std::cout << f[i] << std::endl;
+        
+}
 
 //"forward" fourier transforms real array into complex array
 void fftwf(int n, double*in, complex*out){

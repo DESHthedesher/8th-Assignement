@@ -25,4 +25,7 @@ const int sparktime = 10;
 const int totaltime = 50;
 
 //amount of heat injected
-const double heatinject = 1;
+const double heatinject = 1.0;
+
+//number of steps before data is plotted:
+const int plotEvery = 1;

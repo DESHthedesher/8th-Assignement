@@ -10,11 +10,8 @@ all: Hotrod
 example: example.cpp
 	g++ -O2 -Wall -o example example.cpp -lfftw3
 
-Hotrod: runner.o
-	${CPP} ${cflags} -o Hotrod runner.o ${libraries} 
-
-Rod.o: Rod.cpp
-	${CPP} ${cflags} -c Rod.cpp
+Hotrod: runner.o Writer.o 
+	${CPP} ${cflags} -o Hotrod runner.o Writer.o ${libraries} 
 
 Writer.o: Writer.cpp
 	${CPP} ${cflags} -c Writer.cpp
@@ -23,4 +20,4 @@ runner.o: runner.cpp
 	${CPP} ${cflags} -c runner.cpp
 
 clean:
-	rm -rf Rod.o runner.o Writer.o Hotrod example
+	rm -rf runner.o Writer.o data.dat Hotrod example
