@@ -16,8 +16,11 @@ Hotrod: runner.o
 Rod.o: Rod.cpp
 	${CPP} ${cflags} -c Rod.cpp
 
+Writer.o: Writer.cpp
+	${CPP} ${cflags} -c Writer.cpp
+
 runner.o: runner.cpp
 	${CPP} ${cflags} -c runner.cpp
 
 clean:
-	rm -rf Rod.o runner.o Hotrod example
+	rm -rf Rod.o runner.o Writer.o Hotrod example

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fftw3.h>
 #include <Constants.h>
+#include <Writer.h>
 
 //define abnormal types
 typedef std::complex<double> complex;
@@ -107,6 +108,8 @@ int main(int argc, char *argv[] ) {
         printRealArray(heat, n+2);
         std::cout<<"time: "<<time<<std::endl;
         std::cout <<"step"<<step<<"\n\n\n\n"<<std::endl;
+        
+        
     
     }
     
