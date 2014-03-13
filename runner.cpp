@@ -11,33 +11,34 @@ typedef std::complex<double> complex;
 void fftwf(int, complex*, complex*);
 void fftwb(int, complex*, complex*);
 void printRodT(complex*, int);
+complex* boundaries(complex*, int);
 
 
 
 int main(int argc, char *argv[] ) {
 
     //define the arrays which will be acted on by fftw
-    complex *heat = new complex[n];
-    complex *ftheat = new complex[n];
+    complex *heat = new complex[n+2];
+    complex *ftheat = new complex[n+2];
     
     //define complementary arrays
-    double *rod = new double[n];
-    complex *firstFTheat = new complex[n];
-    double *allk = new double[n];
+    double *rod = new double[n+2];
+    complex *firstFTheat = new complex[n+2];
+    double *allk = new double[n+2];
     
     
     //define other variables
     int step = 0;
     double time = 0;
-    
+    complex Dkt;
+    double euler = 2.71828182845904523536028747135266249775;
     
     //populate firsthalfk and secondhalfk with appropriate values:
-    for(int i = 0; i< n/2 ; i++){
+    for(int i = 0; i< (n+2)/2 ; i++){
         double k = (2*M_PI*i)/length;
         allk[i] = k;
     }
-    
-    for(int i = n/2; i < n; i++){
+    for(int i = (n+2)/2; i < n+2; i++){
         double k = (2*M_PI*i)/length;
         allk[i] = k;
     }
@@ -45,14 +46,14 @@ int main(int argc, char *argv[] ) {
     
     
     //populate the rod with space values
-    for(int i = 0; i < n; i++){
+    for(int i = 0; i < n+2; i++){
         double x = (i + 0.5)*dx;
         rod[i] = x ;
     }
     
     
     //make heat 0 everywwhere in the rod except for halfway down the rod
-    for(int i = 0; i < n; i++){
+    for(int i = 0; i < n+2; i++){
         double y = 0;
         heat[i] = y;
     }
@@ -64,8 +65,8 @@ int main(int argc, char *argv[] ) {
     //inject heat every sparktime steps
     for(int h = 0; h < totaltime/sparktime; h++){
         time = 0;
-        heat[n/2] += 1.0;
-        fftwf(n, heat, ftheat);
+        heat[(n+2)/2] += 1.0;
+        fftwf(n+2, heat, ftheat);
         firstFTheat = ftheat;
         
         
@@ -73,24 +74,25 @@ int main(int argc, char *argv[] ) {
         for(int i = 0; i < sparktime; i++){
             step += 1;
         
-            //modify the first half of the fourier transformed values
-            for(int k = 0; k < n; k++){
-                double Dkt = -1*diffusivity*pow(allk[k],2.0)*time;
-                ftheat[k] = firstFTheat[k]*pow(2.71828182845904523536028747135266249775724709369995,Dkt);
+            //modify the fourier transformed values
+            for(int k = 0; k < n+2; k++){
+                Dkt = -1*diffusivity*pow(allk[k],2.0)*time;
+                ftheat[k] = firstFTheat[k]*pow(euler,Dkt);
             }
 
+            //impose periodic boundary conditions
+            ftheat = boundaries(ftheat, n);
+            
             //reverse the fourier tranform on the evolved values
-            fftwb(n, ftheat, heat);
+            fftwb(n+2, ftheat, heat);
             
             //write out the evolved heat and increase the timestep
             time += dt;
     
         }
         
-        
-        
         //print the step, time, and T
-        printRodT(heat, n);
+        printRodT(heat, n+2);
         std::cout<<"time: "<<time<<std::endl;
         std::cout <<"step"<<step<<"\n\n\n\n"<<std::endl;
     
@@ -103,9 +105,16 @@ int main(int argc, char *argv[] ) {
     return 0;
 }
 
+complex* boundaries(complex *f, int n){
+
+    f[0] = f[n];
+    f[n+1] = f[1];
+    return f;
+}
+
 void printRodT(complex *f, int n){
     
-    for(int i; i < n; i++)
+    for(int i=0; i < n+2; i++)
         std::cout << f[i] << std::endl;
         
         
